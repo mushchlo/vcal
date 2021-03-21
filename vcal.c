@@ -50,7 +50,7 @@ drawblocks(Rectangle region, int blocks, int cols, int skip, int start, int barw
 	int rows, tilewid, i;
 
 	tile = Pt(skip, 0);
-	rows = ((blocks / cols) + (blocks%cols != 0));
+	rows = ((blocks + skip) / cols) + ((blocks + skip) % cols != 0);
 
 	tilewid = min((Dy(region) + barwidth*(rows-1) - 2*pad) / rows,
 					(Dx(region) + barwidth*(cols-1) - 2*pad) / cols);
@@ -171,7 +171,7 @@ main(int argc, char **argv)
 			break;
 		if(m.buttons & 2){
 			menuresult = emenuhit(2, &m, &months);
-			if(menuresult > 0){
+			if(menuresult >= 0){
 				viewing[Month] = (Yearscope){ 2021, menuresult };
 				drawmonth(viewing[Month]);
 			}
