@@ -1,142 +1,14 @@
-#include <u.h>
-#include <libc.h>
-#include <draw.h>
-#include <event.h>
-#define SWAP(x, y, T) do{ T SWAPTMP = x; x = y; y = SWAPTMP; } while(0)
-#define defont display->defaultfont
-
-enum { Day, Week, Month, Year };
-enum { Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec };
+#include "vcal.h"
 
 int daysin[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };	/* this is for non-leap year. */
 char *monthnames[] = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", nil };
 char *daynames[]   = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 
-struct Date {
-	int year;	/* CE */
-	int day;	/* 1 - 365/366 */
-};
-typedef struct Date Date;
-
-struct Yearscope {
-	int year;
-	int n;
-};
-typedef struct Yearscope Yearscope;
-
-Menu months;
-
 Yearscope viewing[4];
 int mode = Month;
 int opad = 10;
+Menu months;
 
-
-int
-min(int a, int b)
-{
-	if(a < b)
-		return a;
-	return b;
-}
-
-int
-modulo(int a, int n)
-{
-	int r;
-
-	r = a % n;
-	return (r < 0) ? r + n : r;
-}
-
-Point
-addptint(Point p, int x)
-{
-	return addpt(p, (Point){x,x});
-}
-
-int
-isleapyear(int y)
-{
-	if(y%4 == 0 && y%100 != 0
-		|| y%400 == 0)
-		return 1;
-	return 0;
-}
-
-int
-before(Date before, Date after)
-{
-	if(before.year > after.year)
-		return 0;
-	if(before.year < after.year)
-		return 1;
-	if(before.day > after.day)
-		return 0;
-	return 1;
-}
-
-int
-leapdaysbetween(Date d₁, Date d₂)	/* includes both d₁ and d₂ in the count */
-{
-	int i, ld, rev;
-
-	ld = 0;
-	rev = 1;
-	if(!before(d₁, d₂)){
-		SWAP(d₁, d₂, Date);
-		rev = -1;
-	}
-
-	for(i = d₁.year; i < d₂.year; i++)
-		if(isleapyear(i))
-			ld++; 
-
-	return ld*rev;
-}
-
-int
-daysbetween(Date d₁, Date d₂)
-{
-	int Δy, Δd;
-
-	Δy = d₂.year - d₁.year;
-	Δd = d₂.day - d₁.day;
-
-	return (365*Δy) + Δd + leapdaysbetween(d₁, d₂);	/* returns negative values
-														if d₁ is greater than d₂ */
-}
-
-int
-dayofweek(Date d)	/* Monday is 0, Sunday 6 */
-{
-	Date refdate;
-
-	refdate = (Date){ 1900, 1 };	/* Jan 1st, 1900 was a Monday */
-	return modulo(daysbetween(refdate, d), 7);
-}
-
-Date
-todate(int y, int m, int d)
-{
-	int i;
-
-	for(i = Jan; i < m; i++)
-		d += daysin[i] + (m == Feb && isleapyear(y));
-
-	return (Date){y, d};
-}
-
-int
-fstdaymonth(Yearscope t)
-{
-	return dayofweek(todate(t.year, t.n, 1));
-}
-
-int
-fsdayweek(Yearscope t)	/* ordinal weeks are as spoken, so 1st week is week 1 */
-{
-	return dayofweek((Date){t.year, 1+7*((t.n)-1)});
-}
 
 void
 clearscreen(void)
@@ -201,19 +73,19 @@ drawblocks(Rectangle region, int blocks, int cols, int skip, int start, int barw
 }
 
 void
-drawday(Yearscope d)
+drawday(Yearscope t)
 {
 	
 }
 
 void
-drawweek(Yearscope w)
+drawweek(Yearscope t)
 {
 	
 }
 
 void
-drawmonth(Yearscope m)
+drawmonth(Yearscope t)
 {
 	Rectangle region;
 	int days, wid, linepx;
@@ -221,12 +93,12 @@ drawmonth(Yearscope m)
 	clearscreen();
 
 	linepx = 2;
-	days = daysin[m.n] + (m.n == Feb && isleapyear(m.year));
+	days = daysin[t.n] + (t.n == Feb && isleapyear(t.year));
 	region = screen->r;
 	region.min.y += 4*defont->height;
 
-	wid = drawblocks(region, days, 7, fstdaymonth(m), 1, linepx, opad);
-	centertext(monthnames[m.n],
+	wid = drawblocks(region, days, 7, fstdaymonth(t), 1, linepx, opad);
+	centertext(monthnames[t.n],
 				Pt(screen->r.min.x + 7*(wid - linepx)/2, screen->r.min.y + defont->height),		/* month name */
 				defont);
 	columntext(daynames,
@@ -235,7 +107,7 @@ drawmonth(Yearscope m)
 }
 
 void
-drawyear(Yearscope y)
+drawyear(int y)
 {
 	
 }
@@ -254,8 +126,8 @@ drawcalendar(int scope, Yearscope curr)
 		drawmonth(curr);
 		break;
 	case Year:
-		drawyear(curr);
-		drawmonth(curr);
+		drawyear(curr.year);
+		break;
 	}
 }
 
