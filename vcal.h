@@ -23,4 +23,11 @@ struct Yearscope {
 };
 typedef struct Yearscope Yearscope;
 
+struct Threebutton {
+	Rectangle region;
+	Menu menu;
+	int *control;
+};
+typedef struct Threebutton Threebutton;
+
 #include "fns.h"

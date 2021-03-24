@@ -1,6 +1,24 @@
 #include "vcal.h"
 
 int
+curmo(void)
+{
+	Tm *tm;
+
+	tm = localtime(time(0));
+	return tm->mon;
+}
+
+int
+curyr(void)
+{
+	Tm *tm;
+
+	tm = localtime(time(0));
+	return tm->year+1900;
+}
+
+int
 isleapyear(int y)
 {
 	if(y%4 == 0 && y%100 != 0
@@ -76,10 +94,4 @@ int
 fstdaymonth(Yearscope t)
 {
 	return dayofweek(todate(t.year, t.n, 1));
-}
-
-int
-fstdayweek(Yearscope t)	/* ordinal weeks are as spoken, so 1st week is week 1 */
-{
-	return dayofweek((Date){t.year, 1+7*((t.n)-1)});
 }

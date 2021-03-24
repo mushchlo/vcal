@@ -6,8 +6,9 @@ TARG=vcal
 
 OFILES=\
 	vcal.$O\
-	dates.$O\
+	date.$O\
 	arith.$O\
+	draw.$O\
 
 HFILES=\
 	vcal.h\
