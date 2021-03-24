@@ -108,17 +108,20 @@ main(/*int argc, char **argv*/void)
 					if(*(button[i].control) > Jan){
 						--*(button[i].control);
 						drawmonth(viewing[Month]);
+						holdonbutton(1, m);
 					}
 				if(m.buttons & 2){
 					menuresult = emenuhit(2, &m, &(button[i].menu));
 					if(menuresult >= 0)
 						viewing[Month] = (Yearscope){ 2021, menuresult };
 					drawmonth(viewing[Month]);
+					holdonbutton(2, m);
 				}
 				if(m.buttons & 4)
 					if(*(button[i].control) < Dec){
 						++*(button[i].control);
 						drawmonth(viewing[Month]);
+						holdonbutton(4, m);
 					}
 			}
 		}

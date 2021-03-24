@@ -7,6 +7,15 @@ clearscreen(void)
 }
 
 void
+holdonbutton(int b, Mouse m)
+{
+	while(m.buttons & b){
+		m = emouse();
+		sleep(10);
+	}
+}
+
+void
 righttext(char *text, Point topright, int pad, Font *f)
 {
 	topright.x -= stringwidth(f, text) + pad;

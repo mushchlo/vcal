@@ -27,6 +27,7 @@ int			maxstrwidth(char**, Font*);
 
 	/* draw.c */
 void		clearscreen(void);
+void		holdonbutton(int, Mouse);
 void		righttext(char*, Point, int, Font*);
 void		centertext(char*, Point, Font*);
 void		columntext(char**, Point, int, int, Font*);
