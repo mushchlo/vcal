@@ -1,6 +1,13 @@
 #include "vcal.h"
 
 int
+daysin(int m)
+{
+	int d[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	return d[m];
+}
+
+int
 curmo(void)
 {
 	Tm *tm;
@@ -25,6 +32,28 @@ isleapyear(int y)
 		|| y%400 == 0)
 		return 1;
 	return 0;
+}
+
+void
+mondec(Yearscope *ctl)
+{
+	if(ctl->n > Jan)
+		ctl->n--;
+	else {
+		ctl->n = Dec;
+		ctl->year--; 
+	}
+}
+
+void
+moninc(Yearscope *ctl)
+{
+	if(ctl->n < Dec)
+		ctl->n++;
+	else {
+		ctl->n = Jan;
+		ctl->year++;
+	}
 }
 
 int
@@ -85,7 +114,7 @@ todate(int y, int m, int d)
 	int i;
 
 	for(i = Jan; i < m; i++)
-		d += daysin[i] + (m == Feb && isleapyear(y));
+		d += daysin(i) + (m == Feb && isleapyear(y));
 
 	return (Date){y, d};
 }

@@ -2,14 +2,14 @@
 #include <libc.h>
 #include <draw.h>
 #include <event.h>
+#include <keyboard.h>
 
 #define SWAP(x, y, T) do{ T SWAPTMP = x; x = y; y = SWAPTMP; } while(0)
 #define defont display->defaultfont
 
 enum { Day, Week, Month, Year };
 enum { Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec };
-
-extern int daysin[];
+enum { Noclick, Left, Middle, Right = 4 };
 
 struct Date {
 	int year;	/* CE */
@@ -24,9 +24,8 @@ struct Yearscope {
 typedef struct Yearscope Yearscope;
 
 struct Threebutton {
-	Rectangle region;
-	Menu menu;
-	int *control;
+	Rectangle	region;
+	void (*action[5])(Mouse *m, Menu *mn, Yearscope *ctl, int mode);
 };
 typedef struct Threebutton Threebutton;
 

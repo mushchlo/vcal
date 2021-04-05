@@ -6,6 +6,19 @@ clearscreen(void)
 	draw(screen, screen->r, display->white, nil, ZP);
 }
 
+Threebutton
+newbutton(void)
+{
+	Threebutton new;
+	int i;
+
+	new.region = Rect(0, 0, 0, 0);
+	for(i = Noclick; i < Right; i++)
+		new.action[i] = nil;
+
+	return new;
+}
+
 void
 holdonbutton(int b, Mouse m)
 {
@@ -48,9 +61,11 @@ drawchev(Point tip, int w, int t)
 	int h;
 	Point p[6];
 
-	if(w < 0)
+	tip.x--;
+	if(w < 0){
 		t = -t;
-
+		tip.x++;
+	}
 	h = (w - t);
 
 	p[0] = tip;
@@ -61,6 +76,20 @@ drawchev(Point tip, int w, int t)
 	p[5] = Pt(tip.x + h, tip.y + h);
 
 	fillpoly(screen, p, 6, 0, display->black, ZP);
+}
+
+Rectangle
+drawbutton(Point center, Point pad, char *str, int w, int t, Font *f)
+{
+	Rectangle r;
+
+	centertext(str, center, f);
+	r = centerrect(center, w, f->height + pad.y);
+	border(screen, r, t, display->black, ZP);
+	drawchev(Pt(center.x - w/2 + (pad.x + t), center.y), 10, t);
+	drawchev(Pt(center.x + w/2 - (pad.x + t), center.y), -10, t);
+
+	return r;
 }
 
 Rectangle		/* returns bounding rectangle */

@@ -6,9 +6,12 @@ void		drawyear(int);
 void		drawcalendar(int, Yearscope);
 
 	/* date.c */
+int			daysin(int);
 int			curmo(void);
 int			curyr(void);
 int			isleapyear(int);
+void		mondec(Yearscope*);
+void		moninc(Yearscope*);
 int			before(Date, Date);
 int			leapdaysbetween(Date, Date);
 int			daysbetween(Date, Date);
@@ -27,9 +30,11 @@ int			maxstrwidth(char**, Font*);
 
 	/* draw.c */
 void		clearscreen(void);
+Threebutton	newbutton(void);
 void		holdonbutton(int, Mouse);
 void		righttext(char*, Point, int, Font*);
 void		centertext(char*, Point, Font*);
 void		columntext(char**, Point, int, int, Font*);
 void		drawchev(Point, int, int);
+Rectangle	drawbutton(Point, Point, char*, int, int, Font*);
 Rectangle	drawblocks(Rectangle, int, int, int, int, int, int);

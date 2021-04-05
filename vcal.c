@@ -1,11 +1,11 @@
 #include "vcal.h"
 
-int  daysin[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };	/* non-leapyear */
 char *mname[] = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", nil };
 char *dname[] = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 
-Threebutton button[2];
-Yearscope viewing[4];
+static Threebutton monthb;
+static Threebutton yearb;
+static Yearscope viewing[4];
 int mode = Month;
 int opad = 10;
 
@@ -25,28 +25,30 @@ void
 drawmonth(Yearscope t)
 {
 	Rectangle bounds, tileregion;
-	Point p;
-	int days, linepx, w;
+	Point p₁, p₂;
+	char *year;
+	int days, linepx, w₁, w₂;
 
 	clearscreen();
-	linepx = 3;
+	linepx = 2;
 
+	year = smprint("%d", viewing[mode].year);
 	tileregion = screen->r;
 	tileregion.min.y += 4*defont->height;
-	days = daysin[t.n] + (t.n == Feb && isleapyear(t.year));
+	days = daysin(t.n) + (t.n == Feb && isleapyear(t.year));
 
 	bounds = drawblocks(tileregion, days, 7, fstdaymonth(t), 1, linepx, opad);
 
-	p = center(screen->r);
-	p.y = screen->r.min.y + defont->height;
-	w = maxstrwidth(mname, defont);
+	p₁ = center(screen->r);
+	p₁.y = screen->r.min.y + defont->height;
+	w₁ = maxstrwidth(mname, defont) + 50;
+	w₂ = stringwidth(defont, year) + 50;
+	p₂.x = screen->r.max.x - (w₂/2 + opad);
+	p₂.y = screen->r.min.y + defont->height;
+	
 
-	centertext(mname[t.n], p, defont);										/* month name */
-	button[0].region = centerrect(p, w + 40, defont->height + opad);
-	border(screen, button[0].region, 2, display->black, ZP);				/* TODO: all of this should be condensed into some drawThreebutton() function */
-	drawchev(Pt(p.x - (w - 22), p.y), 10, 3);
-	drawchev(Pt(p.x + (w - 22), p.y), -10, 3);
-
+	monthb.region = drawbutton(p₁, Pt(opad/3, opad), mname[t.n], w₁, linepx, defont);
+	yearb.region = drawbutton(p₂, Pt(opad/3, opad), year, w₂, linepx, defont);
 
 	bounds.min.y -= defont->height;
 	columntext(dname, bounds.min, Dx(bounds), 7, defont);	/* day names */
@@ -56,6 +58,51 @@ void
 drawyear(int y)
 {
 	
+}
+
+void
+dec(Mouse *m, Menu *mn, Yearscope *ctl, int mode)
+{
+	switch(mode){
+		case Year:
+			ctl->year--;
+			break;
+		case Month:
+			mondec(ctl);
+			break;
+	}
+}
+
+void
+inc(Mouse *m, Menu *mn, Yearscope *ctl, int mode)
+{
+	switch(mode){
+		case Year:
+			ctl->year++;
+			break;
+		case Month:
+			moninc(ctl);
+			break;
+	}
+}
+
+void
+nsel(Mouse *m, Menu *mn, Yearscope *ctl, int mode)
+{
+	int sel;
+
+	if((sel = emenuhit(m->buttons, m, mn)) >= 0)
+		ctl->n = sel;
+}
+
+void
+yearsel(Mouse *m, Menu *mn, Yearscope *ctl, int mode)
+{
+	char year[5];
+
+	year[4] = 0;
+	if(eenter("Jump to year:", year, 5, m) > 0)
+		ctl->year = atoi(year);
 }
 
 void
@@ -86,13 +133,28 @@ eresized(int new)
 }
 
 void
-main(/*int argc, char **argv*/void)
+main(/*int argc, char *argv[]*/void)
 {
-	int menuresult, i;
+	Threebutton *button[Year+1];
 	Mouse m;
+	Menu monthmen;
+	Event ev;
+	int clicked, e, i;
 
-	button[0].menu.item = mname;
-	button[0].control   = &(viewing[Month].n);
+	monthb = newbutton();
+	monthb.action[Left]		= dec;
+	monthb.action[Middle]	= nsel;
+	monthb.action[Right]	= inc;
+
+	yearb = newbutton();
+	yearb.action[Left]		= dec;
+	yearb.action[Middle]	= yearsel;
+	yearb.action[Right]		= inc;
+
+	monthmen.item = mname;
+
+	button[Month] = &monthb;
+	button[Year] = &yearb;
 
 	viewing[Month] = (Yearscope){ curyr(), curmo() };
 
@@ -100,30 +162,18 @@ main(/*int argc, char **argv*/void)
 	eresized(0);
 	einit(Emouse);
 
+	print("yep");
 	for(;;){
+//		e = event(&ev);
+//		if(e == Ekeyboard && ev.kbdc == 27)
+//			break;
 		m = emouse();
-		for(i = 0; i < 1; i++){
-			if(ptinrect(m.xy, button[i].region)){
-				if(m.buttons & 1)
-					if(*(button[i].control) > Jan){
-						--*(button[i].control);
-						drawmonth(viewing[Month]);
-						holdonbutton(1, m);
-					}
-				if(m.buttons & 2){
-					menuresult = emenuhit(2, &m, &(button[i].menu));
-					if(menuresult >= 0)
-						viewing[Month] = (Yearscope){ 2021, menuresult };
-					drawmonth(viewing[Month]);
-					holdonbutton(2, m);
-				}
-				if(m.buttons & 4)
-					if(*(button[i].control) < Dec){
-						++*(button[i].control);
-						drawmonth(viewing[Month]);
-						holdonbutton(4, m);
-					}
+		for(i = Month; i <= Year; i++)
+			if(ptinrect(m.xy, button[i]->region) && m.buttons){
+				clicked = m.buttons;
+				button[i]->action[m.buttons](&m, &monthmen, &viewing[mode], i);	/* make this mode-agnostic */
+				drawcalendar(mode, viewing[mode]);
+				holdonbutton(clicked, m);
 			}
-		}
 	}
 }
