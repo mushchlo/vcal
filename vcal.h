@@ -9,7 +9,7 @@
 
 enum { Day, Week, Month, Year };
 enum { Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec };
-enum { Noclick, Left, Middle, Right = 4 };
+enum { Noclick, Left, Mid, Right = 4 };
 
 struct Date {
 	int year;	/* CE */

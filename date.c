@@ -35,23 +35,23 @@ isleapyear(int y)
 }
 
 void
-mondec(Yearscope *ctl)
+ndec(Yearscope *ctl, int min, int max)
 {
-	if(ctl->n > Jan)
+	if(ctl->n > min)
 		ctl->n--;
 	else {
-		ctl->n = Dec;
+		ctl->n = max;
 		ctl->year--; 
 	}
 }
 
 void
-moninc(Yearscope *ctl)
+ninc(Yearscope *ctl, int min, int max)
 {
-	if(ctl->n < Dec)
+	if(ctl->n < max)
 		ctl->n++;
 	else {
-		ctl->n = Jan;
+		ctl->n = min;
 		ctl->year++;
 	}
 }
